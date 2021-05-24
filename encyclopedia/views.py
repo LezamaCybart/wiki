@@ -7,13 +7,17 @@ from . import util
 
 import markdown2
 
-class searchEntry(forms.Form):
+class SearchEntry(forms.Form):
     entry = forms.CharField(label="Search Encyclopedia", widget=forms.TextInput(attrs={'class': "search"}))
+
+class NewPage(forms.Form):
+    entry_title = forms.CharField(label="Title")
+    entry_body = forms.CharField(label="Body", widget=forms.Textarea)
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
         "entries": util.list_entries(),
-        "search_form": searchEntry()
+        "search_form": SearchEntry()
     })
 
 def display_entry(request, entry_title):
@@ -29,7 +33,7 @@ def display_entry(request, entry_title):
 
 
 def search(request):
-    form = searchEntry(request.POST)
+    form = SearchEntry(request.POST)
     if form.is_valid():
         entry_name = form.cleaned_data["entry"]
 
@@ -49,3 +53,21 @@ def search(request):
             })
 
     return render(request, "encyclopedia/not_found.html")
+
+def new_page(request):
+    if request.method == "POST":
+        form = NewPage(request.POST)
+        if form.is_valid():
+            entry_title = form.cleaned_data["entry_title"]
+            entry_body = form.cleaned_data["entry_body"]
+
+            if util.get_entry(entry_title):
+                return HttpResponse("ENTRY ALREADY EXISTS!")
+            
+            util.save_entry(entry_title, entry_body)
+            return display_entry(request, entry_title)
+
+    return render(request, "encyclopedia/new_page.html", {
+        "new_page_form": NewPage()
+    })
+
