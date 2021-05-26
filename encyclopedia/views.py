@@ -1,4 +1,3 @@
-import re
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django import forms
@@ -71,3 +70,20 @@ def new_page(request):
         "new_page_form": NewPage()
     })
 
+def edit_page(request, entry_title):
+    if request.method == "POST":
+        form = NewPage(request.POST)
+        if form.is_valid():
+            entry_title = form.cleaned_data["entry_title"]
+            entry_body = form.cleaned_data["entry_body"]
+
+            util.save_entry(entry_title, entry_body)
+            return display_entry(request, entry_title)
+
+    return render(request, "encyclopedia/edit_page.html", { 
+        "edit_entry_form": NewPage(
+            initial={ 
+                'entry_title': entry_title,
+                'entry_body': util.get_entry(entry_title)
+                })
+        })
