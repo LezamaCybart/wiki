@@ -1,6 +1,7 @@
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django import forms
+import random
 
 from . import util
 
@@ -87,3 +88,8 @@ def edit_page(request, entry_title):
                 'entry_body': util.get_entry(entry_title)
                 })
         })
+
+def random_page(request):
+    return display_entry(request, random.choice(list(util.list_entries())))
+    
+
